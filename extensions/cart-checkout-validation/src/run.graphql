@@ -1,13 +1,23 @@
 query Input {
   cart {
-    buyerIdentity {
-      customer {
-        numberOfOrders
-      }
-    }
     cost {
       subtotalAmount {
         amount
+      }
+    }
+    lines {
+      merchandise {
+        ... on ProductVariant {
+          product {
+            __typename
+            productType
+            title
+            hasTags(tags: ["sample-product"]) {
+              hasTag
+              tag
+            }
+          }
+        }
       }
     }
   }

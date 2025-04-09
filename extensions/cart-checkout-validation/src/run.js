@@ -1,31 +1,44 @@
 // @ts-check
 
-// Use JSDoc annotations for type safety
 /**
-* @typedef {import("../generated/api").RunInput} RunInput
-* @typedef {import("../generated/api").FunctionRunResult} FunctionRunResult
-*/
+ * @typedef {import("../generated/api").RunInput} RunInput
+ * @typedef {import("../generated/api").FunctionRunResult} FunctionRunResult
+ */
 
-// The configured entrypoint for the 'purchase.validation.run' extension target
 /**
-* @param {RunInput} input
-* @returns {FunctionRunResult}
-*/
+ * @param {RunInput} input
+ * @returns {FunctionRunResult}
+ */
 export function run(input) {
-  // The error
   const error = {
-    localizedMessage:
-        "You cannot checkout with free items",
-    target: "cart"
+    localizedMessage: 'You cannot checkout with free sample items only',
+    target: 'cart'
   };
-  // Parse the decimal (serialized as a string) into a float.
+
   const orderSubtotal = parseFloat(input.cart.cost.subtotalAmount.amount);
+  const items = input.cart.lines;
+
+  items.forEach((line) => {
+    // console.log("LINE", JSON.stringify(line));
+    console.log("LINE PRODUCT", JSON.stringify(line.merchandise.product));
+    console.log("PRODUCT TYPE", line.merchandise.product.productType?.toLowerCase())
+    console.log("PRODUCT PRODUCT TYPE", line.merchandise.product.__typename)
+  });
+
+  // Check if ALL items have productType === 'sample'
+  const allSampleProducts =
+    items.length > 0 &&
+    items.every(
+      (line) =>
+        line.merchandise.product.__typename === 'Product' &&
+        line.merchandise.product.productType?.toLowerCase() === 'sample'
+    );
+
   const errors = [];
 
-  // Orders with subtotals greater than $1,000 are available only to established customers.
-  if (orderSubtotal == 0) {
+  if (orderSubtotal === 0 && allSampleProducts) {
     errors.push(error);
   }
 
   return { errors };
-};
+}
